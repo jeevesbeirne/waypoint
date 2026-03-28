@@ -77,20 +77,20 @@ export default function StarsScreen() {
               <Text style={styles.starTitle}>{star.emoji} {star.title}</Text>
               <Text style={styles.starDesc}>{star.desc}</Text>
               <View style={styles.sliderRow}>
-                <Pressable style={styles.stepBtn} onPress={() => handleChange(star.key, -10)}>
-                  <Text style={styles.stepBtnText}>−10</Text>
-                </Pressable>
                 <Pressable style={styles.stepBtn} onPress={() => handleChange(star.key, -5)}>
                   <Text style={styles.stepBtnText}>−5</Text>
+                </Pressable>
+                <Pressable style={styles.stepBtn} onPress={() => handleChange(star.key, -1)}>
+                  <Text style={styles.stepBtnText}>−1</Text>
                 </Pressable>
                 <View style={styles.valueBox}>
                   <Text style={styles.valueText}>{val}%</Text>
                 </View>
+                <Pressable style={styles.stepBtn} onPress={() => handleChange(star.key, 1)}>
+                  <Text style={styles.stepBtnText}>+1</Text>
+                </Pressable>
                 <Pressable style={styles.stepBtn} onPress={() => handleChange(star.key, 5)}>
                   <Text style={styles.stepBtnText}>+5</Text>
-                </Pressable>
-                <Pressable style={styles.stepBtn} onPress={() => handleChange(star.key, 10)}>
-                  <Text style={styles.stepBtnText}>+10</Text>
                 </Pressable>
               </View>
               <View style={styles.progressBar}>

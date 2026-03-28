@@ -77,6 +77,19 @@ export default function TrackMeetingDetail() {
           <Text style={styles.meetingTitle}>{meeting.title || 'Untitled'}</Text>
           <Text style={styles.meetingDate}>{formatDate(meeting.date)}</Text>
           {meeting.meeting_type ? <View style={styles.typeBadge}><Text style={styles.typeBadgeText}>{meeting.meeting_type}</Text></View> : null}
+          {(meeting.has_diagnostic === 1 || meeting.has_strategy === 1 || meeting.has_early_win === 1) && (
+            <View style={styles.xrefBadgeRow}>
+              {meeting.has_diagnostic === 1 && (
+                <View style={styles.xrefBadge}><Text style={styles.xrefBadgeText}>🔍 Diagnostic{meeting.diagnostic_type ? ` — ${meeting.diagnostic_type}` : ''}</Text></View>
+              )}
+              {meeting.has_strategy === 1 && (
+                <View style={[styles.xrefBadge, { backgroundColor: '#E8F5E9' }]}><Text style={[styles.xrefBadgeText, { color: '#2E7D32' }]}>🧭 Strategy</Text></View>
+              )}
+              {meeting.has_early_win === 1 && (
+                <View style={[styles.xrefBadge, { backgroundColor: '#FFF3E0' }]}><Text style={[styles.xrefBadgeText, { color: '#E65100' }]}>⚡ Early Win</Text></View>
+              )}
+            </View>
+          )}
         </View>
 
         {meetingPeople.length > 0 && (
@@ -189,4 +202,7 @@ const styles = StyleSheet.create({
   input: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radii.md, paddingHorizontal: spacing.md, paddingVertical: spacing.sm + 2, fontSize: typography.sizes.base, color: colors.text.primary },
   cancelBtn: { flex: 1, paddingVertical: spacing.md, borderRadius: radii.full, borderWidth: 1, borderColor: colors.border, alignItems: 'center' },
   saveModalBtn: { flex: 1, paddingVertical: spacing.md, borderRadius: radii.full, backgroundColor: colors.accent, alignItems: 'center' },
+  xrefBadgeRow: { flexDirection: 'row' as const, flexWrap: 'wrap' as const, gap: spacing.xs, marginTop: spacing.sm },
+  xrefBadge: { backgroundColor: colors.accentLight, paddingHorizontal: spacing.sm, paddingVertical: 3, borderRadius: radii.full },
+  xrefBadgeText: { fontSize: typography.sizes.xs, color: colors.accent, fontWeight: '600' as const },
 });

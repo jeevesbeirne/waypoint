@@ -34,7 +34,7 @@ export interface ChecklistItem {
 }
 
 // Bump this version whenever CHECKLIST_ITEMS changes to force a re-seed on device
-const CHECKLIST_DATA_VERSION = 5;
+const CHECKLIST_DATA_VERSION = 6;
 
 export async function seedChecklistIfEmpty(): Promise<void> {
   const db = await getDb();

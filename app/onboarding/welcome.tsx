@@ -8,32 +8,22 @@ const features = [
   {
     emoji: '📚',
     title: 'Learn',
-    desc: 'Evidence-based articles to guide your thinking at each phase of your transition.',
+    desc: 'Evidence-based articles and frameworks to guide your thinking at each phase.',
   },
   {
     emoji: '✅',
     title: 'Checklist',
-    desc: 'Your structured 90-day action plan, week by week.',
+    desc: 'Your structured 90-day action plan — by week or by Watkins topic.',
   },
   {
-    emoji: '💭',
-    title: 'Reflect',
-    desc: 'Daily prompts to help you pause, notice, and learn.',
-  },
-  {
-    emoji: '👤',
-    title: 'People',
-    desc: 'Track the key people in your new organisation — their role, influence, and alignment.',
-  },
-  {
-    emoji: '🗓️',
-    title: 'Meetings',
-    desc: 'Log meetings, link them to people, and capture follow-ups and action items.',
+    emoji: '📊',
+    title: 'Track',
+    desc: 'People, diagnostics (SWOT, Porter\'s, STARS), strategy and alignment, meetings, and daily reflection — all in one place.',
   },
   {
     emoji: '⚙️',
     title: 'Settings',
-    desc: 'Your role details, preferences, and notifications.',
+    desc: 'Your start date, seniority level, and transition context.',
   },
 ];
 

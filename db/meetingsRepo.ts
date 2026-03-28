@@ -9,6 +9,10 @@ export interface Meeting {
   meeting_type?: string;
   notes?: string;
   bullets?: string; // JSON array string
+  has_diagnostic?: number;
+  diagnostic_type?: string | null;
+  has_strategy?: number;
+  has_early_win?: number;
   created_at: string;
   updated_at?: string;
 }
@@ -73,8 +77,8 @@ export async function saveMeeting(
   const now = new Date().toISOString();
   if (m.id) {
     await db.runAsync(
-      `UPDATE meetings SET date=?, title=?, meeting_type=?, notes=?, bullets=?, updated_at=? WHERE id=?`,
-      [m.date, m.title ?? '', m.meeting_type ?? '', m.notes ?? '', m.bullets ?? '[]', now, m.id]
+      `UPDATE meetings SET date=?, title=?, meeting_type=?, notes=?, bullets=?, has_diagnostic=?, diagnostic_type=?, has_strategy=?, has_early_win=?, updated_at=? WHERE id=?`,
+      [m.date, m.title ?? '', m.meeting_type ?? '', m.notes ?? '', m.bullets ?? '[]', m.has_diagnostic ?? 0, m.diagnostic_type ?? null, m.has_strategy ?? 0, m.has_early_win ?? 0, now, m.id]
     );
     if (personIds !== undefined) {
       await db.runAsync('DELETE FROM meeting_people WHERE meeting_id = ?', [m.id]);
@@ -91,9 +95,9 @@ export async function saveMeeting(
     // Support legacy person_id field
     const personId = m.person_id ?? null;
     await db.runAsync(
-      `INSERT INTO meetings (id, person_id, title, date, meeting_type, notes, bullets, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, personId, m.title ?? '', m.date, m.meeting_type ?? '', m.notes ?? '', m.bullets ?? '[]', now, now]
+      `INSERT INTO meetings (id, person_id, title, date, meeting_type, notes, bullets, has_diagnostic, diagnostic_type, has_strategy, has_early_win, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, personId, m.title ?? '', m.date, m.meeting_type ?? '', m.notes ?? '', m.bullets ?? '[]', m.has_diagnostic ?? 0, m.diagnostic_type ?? null, m.has_strategy ?? 0, m.has_early_win ?? 0, now, now]
     );
     // Also insert into meeting_people for the primary person if given
     if (personId) {

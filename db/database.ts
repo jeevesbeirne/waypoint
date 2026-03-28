@@ -37,6 +37,12 @@ const webStore: Record<string, any[]> = {
   })),
   daily_logs: [],
   weekly_reviews: [],
+  diagnostic_notes: [],
+  stars_assessment: [],
+  strategy_vision: [],
+  strategies: [],
+  alignment_scores: [],
+  early_wins: [],
 };
 
 function createWebStub() {
@@ -243,6 +249,18 @@ async function initSchema(database: any) {
       FOREIGN KEY (criteria_id) REFERENCES assessment_criteria(id) ON DELETE CASCADE
     );
   `);
+
+  // V4 migrations — meeting cross-reference flags
+  const v4Migrations = [
+    'ALTER TABLE meetings ADD COLUMN has_diagnostic INTEGER DEFAULT 0',
+    'ALTER TABLE meetings ADD COLUMN diagnostic_type TEXT',
+    'ALTER TABLE meetings ADD COLUMN has_strategy INTEGER DEFAULT 0',
+    'ALTER TABLE meetings ADD COLUMN has_early_win INTEGER DEFAULT 0',
+  ];
+
+  for (const sql of v4Migrations) {
+    try { await database.execAsync(sql); } catch (_) { /* column already exists */ }
+  }
 
   // V3 migrations — add after existing schema creation
   const v3Migrations = [

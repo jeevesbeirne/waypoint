@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing, radii, shadows } from '../../lib/theme';
 import { useAppStore } from '../../store';
+import { saveSettings } from '../../db/settingsRepo';
+import { getDayNumber } from '../../lib/utils';
 import DatePickerField from '../../components/DatePickerField';
 
 const LEADER_LEVELS = [
@@ -17,15 +19,24 @@ const LEADER_LEVELS = [
 export default function RoleSetupScreen() {
   const router = useRouter();
   const setSettings = useAppStore((s) => s.setSettings);
+  const setDayNumber = useAppStore((s) => s.setDayNumber);
 
   const [startDate, setStartDate] = useState('');
   const [leaderLevel, setLeaderLevel] = useState<string>('manager');
 
-  const handleNext = () => {
-    router.push({
-      pathname: '/onboarding/goals',
-      params: { name: '', roleTitle: '', orgName: '', startDate, leaderLevel },
-    });
+  const handleNext = async () => {
+    const settings = {
+      start_date: startDate || null,
+      leader_level: leaderLevel as any,
+      onboarding_complete: 1,
+    };
+    await saveSettings(settings);
+    const savedSettings = { ...settings, id: 1 };
+    setSettings(savedSettings as any);
+    if (savedSettings.start_date) {
+      setDayNumber(getDayNumber(savedSettings.start_date));
+    }
+    router.replace('/(tabs)/learn');
   };
 
   return (

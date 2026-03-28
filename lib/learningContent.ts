@@ -32,15 +32,15 @@ export const CATEGORY_LABELS: Record<Article['category'], string> = {
   'early-wins': 'Early Wins',
   alignment: 'Alignment',
   team: 'Team',
-  coalitions: 'Coalitions',
-  balance: 'Balance',
+  coalitions: 'Alliances',
+  balance: 'Manage Yourself',
   accelerate: 'Accelerate',
 };
 
 export const PHASE_ARTICLES: Record<'learn' | 'build' | 'deliver', string[]> = {
   learn: ['prepare-yourself', 'accelerate-your-learning', 'match-strategy-to-situation', 'negotiate-success'],
   build: ['secure-early-wins', 'achieve-alignment', 'build-your-team'],
-  deliver: ['create-coalitions', 'keep-your-balance', 'accelerate-everyone'],
+  deliver: ['create-alliances', 'manage-yourself', 'accelerate-everyone'],
 };
 
 export const ARTICLES: Article[] = [
@@ -417,10 +417,10 @@ Watkins recommends assessing inherited team members on two dimensions: **compete
     ],
   },
   {
-    id: 'create-coalitions',
+    id: 'create-alliances',
     category: 'coalitions',
     phase: 'deliver',
-    title: 'Create Coalitions',
+    title: 'Create Alliances',
     readTimeMinutes: 3,
     summaryBullets: [
       'The most consequential things a senior leader accomplishes cannot be achieved through direct authority alone',
@@ -469,10 +469,10 @@ Before building coalitions, you must understand the terrain. Watkins recommends 
     ],
   },
   {
-    id: 'keep-your-balance',
+    id: 'manage-yourself',
     category: 'balance',
     phase: 'deliver',
-    title: 'Keep Your Balance',
+    title: 'Manage Yourself',
     readTimeMinutes: 3,
     summaryBullets: [
       'The transition period is a sustained stress test — your support networks, familiar rhythms, and known identity are all disrupted simultaneously',
@@ -582,8 +582,8 @@ export const TASK_ARTICLE_MAP: Record<string, string> = {
   'early-wins-build': 'secure-early-wins',
   'alignment-build': 'achieve-alignment',
   'team-build': 'build-your-team',
-  'coalitions-deliver': 'create-coalitions',
-  'balance-deliver': 'keep-your-balance',
+  'coalitions-deliver': 'create-alliances',
+  'balance-deliver': 'manage-yourself',
   'accelerate-deliver': 'accelerate-everyone',
 };
 
@@ -595,8 +595,8 @@ export const TASK_TITLE_ARTICLE_MAP: Array<{ keywords: string[]; articleId: stri
   { keywords: ['early win', 'early wins', 'credibility', 'win target'], articleId: 'secure-early-wins' },
   { keywords: ['alignment', 'align', 'structure', 'misalignment', 'diagnostic'], articleId: 'achieve-alignment' },
   { keywords: ['team', 'direct report', 'assessment', 'competence', 'cohesion'], articleId: 'build-your-team' },
-  { keywords: ['coalition', 'stakeholder', 'peer', 'lateral', 'influence map'], articleId: 'create-coalitions' },
-  { keywords: ['balance', 'stress', 'self', 'reflect', 'wellbeing', 'recovery', 'energy'], articleId: 'keep-your-balance' },
+  { keywords: ['coalition', 'alliance', 'stakeholder', 'peer', 'lateral', 'influence map'], articleId: 'create-alliances' },
+  { keywords: ['balance', 'stress', 'self', 'reflect', 'wellbeing', 'recovery', 'energy', 'manage yourself'], articleId: 'manage-yourself' },
   { keywords: ['accelerate everyone', 'retrospective', 'onboarding', 'intellectual humility'], articleId: 'accelerate-everyone' },
 ];
 

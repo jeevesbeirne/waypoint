@@ -102,7 +102,7 @@ export default function GoalsScreen() {
 
         <View style={styles.skipNote}>
           <Text style={styles.skipText}>
-            💡 You can skip this — goals can be set or updated later in the Reflect tab.
+            💡 You can skip this — goals can be set or updated later in the Track section.
           </Text>
         </View>
 

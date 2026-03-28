@@ -24,6 +24,10 @@ export default function TrackMeetingsList() {
   const [notes, setNotes] = useState('');
   const [selectedPeopleIds, setSelectedPeopleIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [hasDiagnostic, setHasDiagnostic] = useState(false);
+  const [diagnosticType, setDiagnosticType] = useState<string | null>(null);
+  const [hasStrategy, setHasStrategy] = useState(false);
+  const [hasEarlyWin, setHasEarlyWin] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -45,10 +49,17 @@ export default function TrackMeetingsList() {
     if (!title.trim()) { Alert.alert('Title required'); return; }
     setSaving(true);
     try {
-      await saveMeeting({ title: title.trim(), date, meeting_type: meetingType, notes }, selectedPeopleIds);
+      await saveMeeting({
+        title: title.trim(), date, meeting_type: meetingType, notes,
+        has_diagnostic: hasDiagnostic ? 1 : 0,
+        diagnostic_type: hasDiagnostic ? diagnosticType : null,
+        has_strategy: hasStrategy ? 1 : 0,
+        has_early_win: hasEarlyWin ? 1 : 0,
+      }, selectedPeopleIds);
       await loadData();
       setShowModal(false);
       setTitle(''); setDate(getTodayString()); setMeetingType('1:1'); setNotes(''); setSelectedPeopleIds([]);
+      setHasDiagnostic(false); setDiagnosticType(null); setHasStrategy(false); setHasEarlyWin(false);
     } catch (e) { Alert.alert('Error', 'Could not save meeting.'); }
     finally { setSaving(false); }
   };
@@ -124,6 +135,32 @@ export default function TrackMeetingsList() {
             )}
             <Text style={styles.label}>Notes</Text>
             <TextInput style={[styles.input, { minHeight: 160 }]} value={notes} onChangeText={setNotes} multiline textAlignVertical="top" placeholder="What was discussed?" placeholderTextColor={colors.text.muted} />
+
+            <Text style={styles.label}>Cross-references</Text>
+            <View style={{ gap: spacing.sm }}>
+              <Pressable style={[styles.xrefRow, hasDiagnostic && styles.xrefRowOn]} onPress={() => { setHasDiagnostic(!hasDiagnostic); if (hasDiagnostic) setDiagnosticType(null); }}>
+                <Text style={styles.xrefCheck}>{hasDiagnostic ? '☑' : '☐'}</Text>
+                <Text style={styles.xrefText}>Contains diagnostic information</Text>
+              </Pressable>
+              {hasDiagnostic && (
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, paddingLeft: spacing.xl }}>
+                  {(['SWOT quadrant', 'Porter force', 'STARS', 'General'] as const).map((dt) => (
+                    <Pressable key={dt} style={[styles.chip, diagnosticType === dt && styles.chipOn]} onPress={() => setDiagnosticType(diagnosticType === dt ? null : dt)}>
+                      <Text style={[styles.chipText, diagnosticType === dt && styles.chipTextOn]}>{dt}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+              <Pressable style={[styles.xrefRow, hasStrategy && styles.xrefRowOn]} onPress={() => setHasStrategy(!hasStrategy)}>
+                <Text style={styles.xrefCheck}>{hasStrategy ? '☑' : '☐'}</Text>
+                <Text style={styles.xrefText}>Contains strategy / alignment information</Text>
+              </Pressable>
+              <Pressable style={[styles.xrefRow, hasEarlyWin && styles.xrefRowOn]} onPress={() => setHasEarlyWin(!hasEarlyWin)}>
+                <Text style={styles.xrefCheck}>{hasEarlyWin ? '☑' : '☐'}</Text>
+                <Text style={styles.xrefText}>Contains early win information</Text>
+              </Pressable>
+            </View>
+
             <Pressable style={[styles.saveBtn, saving && { opacity: 0.6 }]} onPress={handleSave} disabled={saving}>
               <Text style={styles.saveBtnText}>Save Meeting</Text>
             </Pressable>
@@ -168,4 +205,8 @@ const styles = StyleSheet.create({
   chipTextOn: { color: '#fff', fontWeight: '600' },
   saveBtn: { backgroundColor: colors.accent, paddingVertical: spacing.md, borderRadius: radii.full, alignItems: 'center', marginTop: spacing.xl },
   saveBtnText: { color: '#fff', fontSize: typography.sizes.lg, fontWeight: '700' },
+  xrefRow: { flexDirection: 'row' as const, alignItems: 'center' as const, paddingVertical: spacing.xs, paddingHorizontal: spacing.sm, borderRadius: radii.md, backgroundColor: colors.surface },
+  xrefRowOn: { backgroundColor: colors.accentLight },
+  xrefCheck: { fontSize: 18, marginRight: spacing.sm, color: colors.accent },
+  xrefText: { fontSize: typography.sizes.sm, color: colors.text.primary, flex: 1 },
 });
