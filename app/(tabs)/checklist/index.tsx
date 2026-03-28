@@ -306,27 +306,21 @@ export default function ChecklistTab() {
     );
   };
 
-  const renderItemRow = (item: ChecklistItem, isLastChild?: boolean) => {
+  const renderItemRow = (item: ChecklistItem) => {
     const depth = getDepth(item);
     const isParent = (childrenByParent.get(item.id) ?? []).length > 0;
     const children = childrenByParent.get(item.id) ?? [];
     const childDone = children.filter((c) => c.completed === 1).length;
     const groupColor = getGroupColor(item);
-    const indentLeft = depth * 24;
     const isExpanded = expandedParents.has(item.id);
 
     return (
       <View key={item.id}>
-        {/* Indentation wrapper with connecting line */}
-        <View style={{ flexDirection: 'row', marginHorizontal: spacing.lg }}>
-          {/* Vertical connecting lines for each depth level */}
-          {Array.from({ length: depth }).map((_, i) => (
-            <View key={i} style={{ width: 24, alignItems: 'center' }}>
-              <View style={{ width: 2, flex: 1, backgroundColor: groupColor + '40' }} />
-            </View>
-          ))}
+        <View style={{ flexDirection: 'row', marginHorizontal: spacing.lg, marginLeft: spacing.lg + (depth * 32) }}>
+          {depth > 0 && (
+            <View style={{ width: 4, marginRight: 8, borderRadius: 2, backgroundColor: groupColor + '40' }} />
+          )}
 
-          {/* The actual row */}
           <View style={[styles.row, { flex: 1, marginHorizontal: 0, borderLeftColor: groupColor }]}>
             {/* Expand arrow on LEFT — large touch target */}
             {isParent ? (
@@ -370,7 +364,7 @@ export default function ChecklistTab() {
         </View>
 
         {/* Expanded children with connecting lines */}
-        {isParent && isExpanded && children.map((child, ci) => renderItemRow(child, ci === children.length - 1))}
+        {isParent && isExpanded && children.map((child) => renderItemRow(child))}
       </View>
     );
   };

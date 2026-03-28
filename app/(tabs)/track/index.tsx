@@ -4,10 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, typography, spacing, radii, shadows } from '../../../lib/theme';
 
 const SECTIONS = [
-  { key: 'people', emoji: '👤', title: 'People', desc: 'Manage stakeholders, direct reports, and key relationships', route: '/(tabs)/track/people' },
-  { key: 'diagnostics', emoji: '🔍', title: 'Diagnostics', desc: 'SWOT, Porter\'s Five Forces, STARS mapping', route: '/(tabs)/track/diagnostics' },
-  { key: 'strategy', emoji: '🎯', title: 'Strategy &\nAlignment', desc: 'Vision, mission, strategies, alignment, early wins', route: '/(tabs)/track/strategy' },
-  { key: 'meetings', emoji: '📝', title: 'Meetings', desc: 'Log and review your meetings and conversations', route: '/(tabs)/track/meetings' },
+  { key: 'people', emoji: '👤', title: 'People', desc: 'Stakeholders, reports, relationships', route: '/(tabs)/track/people' },
+  { key: 'diagnostics', emoji: '🔍', title: 'Diagnostics', desc: 'SWOT, Porter, STARS mapping', route: '/(tabs)/track/diagnostics' },
+  { key: 'strategy', emoji: '🎯', title: 'Strategy', desc: 'Vision, mission, and strategic priorities', route: '/(tabs)/track/strategy' },
+  { key: 'early-wins', emoji: '⚡', title: 'Early Wins', desc: 'Track and deliver quick wins', route: '/(tabs)/track/early-wins' },
+  { key: 'meetings', emoji: '📝', title: 'Meetings', desc: 'Log meetings and conversations', route: '/(tabs)/track/meetings' },
+  { key: 'reflect', emoji: '💭', title: 'Reflect', desc: 'Daily reflections and energy tracking', route: '/(tabs)/track/reflect' },
 ] as const;
 
 export default function TrackHome() {
@@ -32,19 +34,6 @@ export default function TrackHome() {
             </Pressable>
           ))}
         </View>
-
-        {/* Daily Reflection — full width */}
-        <Pressable
-          style={styles.reflectCard}
-          onPress={() => router.push('/(tabs)/track/reflect' as any)}
-        >
-          <Text style={styles.reflectEmoji}>💭</Text>
-          <View style={styles.reflectContent}>
-            <Text style={styles.reflectTitle}>Daily Reflection</Text>
-            <Text style={styles.reflectDesc}>Reflect on your day, capture insights, track your energy</Text>
-          </View>
-          <Text style={styles.reflectChevron}>›</Text>
-        </Pressable>
 
         <View style={{ height: spacing['2xl'] }} />
       </ScrollView>
@@ -94,27 +83,4 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     lineHeight: typography.sizes.xs * 1.5,
   },
-  reflectCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-    marginHorizontal: spacing.md,
-    marginTop: spacing.md,
-    borderRadius: radii.xl,
-    padding: spacing.lg,
-    ...shadows.md,
-  },
-  reflectEmoji: { fontSize: 32, marginRight: spacing.md },
-  reflectContent: { flex: 1 },
-  reflectTitle: {
-    fontSize: typography.sizes.base,
-    fontWeight: typography.weights.bold,
-    color: '#fff',
-    marginBottom: spacing.xs,
-  },
-  reflectDesc: {
-    fontSize: typography.sizes.xs,
-    color: 'rgba(255,255,255,0.7)',
-  },
-  reflectChevron: { fontSize: 24, color: colors.accent },
 });

@@ -22,6 +22,7 @@ function buildDefaultWebStore(): Record<string, any[]> {
     strategy_vision: [],
     strategies: [],
     alignment_scores: [],
+    strategy_alignments: [],
     early_wins: [],
     conversation_notes: [],
     assessment_criteria: [],
@@ -204,7 +205,15 @@ function createWebStub() {
       if (fromMatch) {
         const table = fromMatch[1];
         if (webStore[table]) {
-          return (webStore[table][0] as T) ?? null;
+          let rows = webStore[table];
+          if (params && params.length > 0) {
+            const whereMatch = sql.match(/WHERE\s+(.*?)(?:\s+ORDER|\s+LIMIT|\s*$)/is);
+            if (whereMatch) {
+              const whereCols = [...whereMatch[1].matchAll(/(?:\w+\.)?(\w+)\s*=\s*\?/g)].map((m) => m[1]);
+              rows = rows.filter((row: any) => whereCols.every((col, i) => row[col] == params[i]));
+            }
+          }
+          return (rows[0] as T) ?? null;
         }
       }
       return null;
@@ -518,6 +527,57 @@ async function initSchema(database: any) {
       FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE,
       FOREIGN KEY (criteria_id) REFERENCES assessment_criteria(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS strategy_vision (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL,
+      content TEXT,
+      updated_at TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS strategies (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT,
+      status TEXT DEFAULT 'draft',
+      notes TEXT,
+      created_at TEXT,
+      updated_at TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS alignment_scores (
+      id TEXT PRIMARY KEY,
+      dimension TEXT NOT NULL,
+      score INTEGER DEFAULT 3,
+      notes TEXT,
+      updated_at TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS early_wins (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT,
+      status TEXT DEFAULT 'identified',
+      is_visible INTEGER DEFAULT 0,
+      is_team_owned INTEGER DEFAULT 0,
+      addresses_frustration INTEGER DEFAULT 0,
+      connected_to_strategy INTEGER DEFAULT 0,
+      notes TEXT,
+      date_identified TEXT,
+      date_delivered TEXT,
+      created_at TEXT,
+      updated_at TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS strategy_alignments (
+      id TEXT PRIMARY KEY,
+      strategy_id TEXT NOT NULL,
+      dimension TEXT NOT NULL,
+      score INTEGER DEFAULT 3,
+      current_state TEXT,
+      changes_needed TEXT,
+      updated_at TEXT
+    );
   `);
 
   // V4 migrations — meeting cross-reference flags
@@ -532,6 +592,20 @@ async function initSchema(database: any) {
     try { await database.execAsync(sql); } catch (_) { /* column already exists */ }
   }
 
+  try {
+    await database.execAsync(`
+      CREATE TABLE IF NOT EXISTS strategy_alignments (
+        id TEXT PRIMARY KEY,
+        strategy_id TEXT NOT NULL,
+        dimension TEXT NOT NULL,
+        score INTEGER DEFAULT 3,
+        current_state TEXT,
+        changes_needed TEXT,
+        updated_at TEXT
+      )
+    `);
+  } catch (_) {}
+
   // V3 migrations — add after existing schema creation
   const v3Migrations = [
     'ALTER TABLE checklist_items ADD COLUMN start_week INTEGER',
@@ -542,6 +616,7 @@ async function initSchema(database: any) {
     'ALTER TABLE checklist_items ADD COLUMN watkins_groups TEXT',
     'ALTER TABLE checklist_items ADD COLUMN sub_activity TEXT',
     'ALTER TABLE checklist_items ADD COLUMN task_group TEXT',
+    'ALTER TABLE checklist_items ADD COLUMN is_user_task INTEGER DEFAULT 0',
   ];
 
   for (const sql of v3Migrations) {

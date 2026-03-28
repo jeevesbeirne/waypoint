@@ -9,11 +9,8 @@ import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAppStore } from '../../../store';
 import { colors, typography, spacing, radii, shadows, phaseConfig } from '../../../lib/theme';
-import { getPhase, getWeekNumber } from '../../../lib/utils';
-import { ARTICLES, CATEGORY_LABELS } from '../../../lib/learningContent';
-import type { Article } from '../../../lib/learningContent';
+import { ARTICLES } from '../../../lib/learningContent';
 
 const FRAMEWORK_BANNER_KEY = 'waypoint_framework_banner_seen';
 
@@ -116,8 +113,8 @@ const CATEGORIES = [
   { key: 'early-wins', label: '5. Secure Early Wins' },
   { key: 'alignment', label: '6. Achieve Alignment' },
   { key: 'team', label: '7. Build Your Team' },
-  { key: 'coalitions', label: '8. Create Coalitions' },
-  { key: 'balance', label: '9. Keep Your Balance' },
+  { key: 'coalitions', label: '8. Create Alliances' },
+  { key: 'balance', label: '9. Manage Yourself' },
   { key: 'accelerate', label: '10. Accelerate Everyone' },
 ] as const;
 
@@ -228,19 +225,7 @@ const transitionStyles = StyleSheet.create({
 
 export default function LearnTab() {
   const router = useRouter();
-  const { dayNumber, settings } = useAppStore();
-  const hasStartDate = Boolean(settings?.start_date);
-  const phaseKey = getPhase(dayNumber);
-  const weekNum = getWeekNumber(dayNumber);
-  const phase = phaseConfig[phaseKey];
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['prepare']));
-  const [expandedArticles, setExpandedArticles] = useState<Set<string>>(new Set());
-
-  // Determine the correct phase heading
-  const showPrepare = !hasStartDate || dayNumber <= 0;
-  const phaseName = showPrepare ? 'Prepare Yourself' : phase.name;
-  const phaseIcon = showPrepare ? '🎯' : phase.icon;
-  const phaseDayLabel = showPrepare ? 'Before Day 1' : `Day ${dayNumber} of 90`;
 
   const toggleCategory = (cat: string) => {
     setExpandedCategories((prev) => {
@@ -254,33 +239,12 @@ export default function LearnTab() {
     });
   };
 
-  const toggleArticle = (id: string) => {
-    setExpandedArticles((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* Phase Banner */}
-        <View style={[styles.phaseBanner, { backgroundColor: showPrepare ? colors.primary : phase.color }]}>
-          <Text style={styles.phaseBannerEmoji}>{phaseIcon}</Text>
-          <View>
-            <Text style={styles.phaseBannerDay}>{phaseDayLabel}</Text>
-            <Text style={styles.phaseBannerName}>{phaseName}</Text>
-          </View>
-          {!showPrepare && (
-            <View style={styles.phasePill}>
-              <Text style={styles.phasePillText}>Week {weekNum}</Text>
-            </View>
-          )}
+        <View style={styles.learnHeader}>
+          <Text style={styles.learnTitle}>📚 Learn</Text>
+          <Text style={styles.learnSubtitle}>Frameworks and research for your transition</Text>
         </View>
 
         {/* How to think about your transition */}
@@ -302,52 +266,39 @@ export default function LearnTab() {
                 style={styles.accordionHeader}
                 onPress={() => toggleCategory(cat.key)}
               >
+                <View style={styles.accordionExpandBtn}>
+                  <Text style={styles.accordionExpandArrow}>{isExpanded ? '▼' : '▶'}</Text>
+                </View>
                 <Text style={styles.accordionTitle}>{cat.label}</Text>
-                <Text style={styles.accordionChevron}>{isExpanded ? '▲' : '▼'}</Text>
               </Pressable>
 
               {isExpanded && (
                 <View style={styles.accordionContent}>
-                  {articles.map((article) => {
-                    const isArticleExpanded = expandedArticles.has(article.id);
-                    return (
-                      <View key={article.id} style={styles.articleBlock}>
+                  {articles.map((article) => (
+                    <View key={article.id} style={styles.articleBlock}>
+                      <View style={styles.articleDirectContent}>
+                        <View style={styles.articleMetaRow}>
+                          <View style={styles.readTimeBadge}>
+                            <Text style={styles.readTimeText}>{article.readTimeMinutes} min read</Text>
+                          </View>
+                        </View>
+                        {article.summaryBullets.map((bullet, i) => (
+                          <View key={i} style={styles.bulletRow}>
+                            <Text style={styles.bulletDot}>•</Text>
+                            <Text style={styles.articleBulletText}>{bullet}</Text>
+                          </View>
+                        ))}
                         <Pressable
-                          style={styles.articleHeader}
-                          onPress={() => toggleArticle(article.id)}
+                          style={styles.readFullBtn}
+                          onPress={() =>
+                            router.push(`/(tabs)/learn/article/${article.id}`)
+                          }
                         >
-                          <View style={styles.articleHeaderLeft}>
-                            <Text style={styles.articleTitle}>{article.title}</Text>
-                            <View style={styles.readTimeBadge}>
-                              <Text style={styles.readTimeText}>{article.readTimeMinutes} min</Text>
-                            </View>
-                          </View>
-                          <Text style={styles.articleChevron}>
-                            {isArticleExpanded ? '▲' : '▼'}
-                          </Text>
+                          <Text style={styles.readFullBtnText}>Read full article →</Text>
                         </Pressable>
-
-                        {isArticleExpanded && (
-                          <View style={styles.articleExpanded}>
-                            {article.summaryBullets.map((bullet, i) => (
-                              <View key={i} style={styles.bulletRow}>
-                                <Text style={styles.bulletDot}>•</Text>
-                                <Text style={styles.articleBulletText}>{bullet}</Text>
-                              </View>
-                            ))}
-                            <Pressable
-                              style={styles.readFullBtn}
-                              onPress={() =>
-                                router.push(`/(tabs)/learn/article/${article.id}`)
-                              }
-                            >
-                              <Text style={styles.readFullBtnText}>Read full article →</Text>
-                            </Pressable>
-                          </View>
-                        )}
                       </View>
-                    );
-                  })}
+                    </View>
+                  ))}
                 </View>
               )}
             </View>
@@ -416,32 +367,21 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   scroll: { paddingBottom: spacing.xl },
 
-  phaseBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  learnHeader: {
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    gap: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.sm,
   },
-  phaseBannerEmoji: { fontSize: 28 },
-  phaseBannerDay: {
-    fontSize: typography.sizes.xs,
-    color: 'rgba(255,255,255,0.8)',
-    fontWeight: typography.weights.medium,
-  },
-  phaseBannerName: {
-    fontSize: typography.sizes.lg,
-    color: '#fff',
+  learnTitle: {
+    fontSize: typography.sizes['2xl'],
     fontWeight: typography.weights.bold,
+    color: colors.primary,
   },
-  phasePill: {
-    marginLeft: 'auto',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 3,
-    borderRadius: radii.full,
+  learnSubtitle: {
+    fontSize: typography.sizes.sm,
+    color: colors.text.secondary,
+    marginTop: spacing.xs,
   },
-  phasePillText: { fontSize: typography.sizes.xs, color: '#fff', fontWeight: '600' },
 
   card: {
     backgroundColor: colors.surface,
@@ -501,8 +441,19 @@ const styles = StyleSheet.create({
   accordionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: spacing.md,
+    padding: spacing.sm,
+    paddingRight: spacing.md,
+  },
+  accordionExpandBtn: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  accordionExpandArrow: {
+    fontSize: 18,
+    color: colors.text.secondary,
+    fontWeight: 'bold',
   },
   accordionTitle: {
     fontSize: typography.sizes.sm,
@@ -510,7 +461,6 @@ const styles = StyleSheet.create({
     color: colors.primary,
     flex: 1,
   },
-  accordionChevron: { color: colors.text.muted, fontSize: typography.sizes.xs },
   accordionContent: {
     borderTopWidth: 1,
     borderTopColor: colors.border,
@@ -520,18 +470,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  articleHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  articleDirectContent: {
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 2,
+    paddingVertical: spacing.sm,
   },
-  articleHeaderLeft: { flex: 1, flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' },
-  articleTitle: {
-    fontSize: typography.sizes.sm,
-    color: colors.text.primary,
-    fontWeight: typography.weights.medium,
-    flex: 1,
+  articleMetaRow: {
+    flexDirection: 'row',
+    marginBottom: spacing.sm,
   },
   readTimeBadge: {
     backgroundColor: colors.accentLight,
@@ -541,11 +486,6 @@ const styles = StyleSheet.create({
     marginLeft: spacing.sm,
   },
   readTimeText: { fontSize: typography.sizes.xs, color: colors.accent, fontWeight: '600' },
-  articleChevron: { color: colors.text.muted, fontSize: typography.sizes.xs, marginLeft: spacing.sm },
-  articleExpanded: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
-  },
   articleBulletText: {
     flex: 1,
     fontSize: typography.sizes.xs,

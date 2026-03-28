@@ -26,6 +26,16 @@ export interface AlignmentScore {
   updated_at?: string | null;
 }
 
+export interface StrategyAlignment {
+  id: string;
+  strategy_id: string;
+  dimension: 'structure' | 'processes' | 'capabilities';
+  score: number;
+  current_state?: string | null;
+  changes_needed?: string | null;
+  updated_at?: string | null;
+}
+
 export interface EarlyWin {
   id: string;
   title: string;
@@ -42,59 +52,14 @@ export interface EarlyWin {
   updated_at?: string | null;
 }
 
-export async function initStrategyTables(): Promise<void> {
-  const db = await getDb();
-  await db.execAsync(`
-    CREATE TABLE IF NOT EXISTS strategy_vision (
-      id TEXT PRIMARY KEY,
-      type TEXT NOT NULL,
-      content TEXT,
-      updated_at TEXT
-    );
-    CREATE TABLE IF NOT EXISTS strategies (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      description TEXT,
-      status TEXT DEFAULT 'draft',
-      notes TEXT,
-      created_at TEXT,
-      updated_at TEXT
-    );
-    CREATE TABLE IF NOT EXISTS alignment_scores (
-      id TEXT PRIMARY KEY,
-      dimension TEXT NOT NULL,
-      score INTEGER DEFAULT 3,
-      notes TEXT,
-      updated_at TEXT
-    );
-    CREATE TABLE IF NOT EXISTS early_wins (
-      id TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      description TEXT,
-      status TEXT DEFAULT 'identified',
-      is_visible INTEGER DEFAULT 0,
-      is_team_owned INTEGER DEFAULT 0,
-      addresses_frustration INTEGER DEFAULT 0,
-      connected_to_strategy INTEGER DEFAULT 0,
-      notes TEXT,
-      date_identified TEXT,
-      date_delivered TEXT,
-      created_at TEXT,
-      updated_at TEXT
-    );
-  `);
-}
-
 // Vision / Mission
 export async function getVisionMission(type: 'vision' | 'mission'): Promise<StrategyVision | null> {
   const db = await getDb();
-  await initStrategyTables();
   return (await db.getFirstAsync('SELECT * FROM strategy_vision WHERE type = ?', [type])) as StrategyVision | null;
 }
 
 export async function saveVisionMission(type: 'vision' | 'mission', content: string): Promise<StrategyVision> {
   const db = await getDb();
-  await initStrategyTables();
   const now = new Date().toISOString();
   const existing = await getVisionMission(type);
   if (existing) {
@@ -109,13 +74,11 @@ export async function saveVisionMission(type: 'vision' | 'mission', content: str
 // Strategies
 export async function getStrategies(): Promise<Strategy[]> {
   const db = await getDb();
-  await initStrategyTables();
   return (await db.getAllAsync('SELECT * FROM strategies ORDER BY created_at DESC')) as Strategy[];
 }
 
 export async function saveStrategy(s: Partial<Strategy> & { title: string }): Promise<Strategy> {
   const db = await getDb();
-  await initStrategyTables();
   const now = new Date().toISOString();
   if (s.id) {
     await db.runAsync(
@@ -140,13 +103,11 @@ export async function deleteStrategy(id: string): Promise<void> {
 // Alignment
 export async function getAlignmentScores(): Promise<AlignmentScore[]> {
   const db = await getDb();
-  await initStrategyTables();
   return (await db.getAllAsync('SELECT * FROM alignment_scores ORDER BY dimension ASC')) as AlignmentScore[];
 }
 
 export async function saveAlignmentScore(dimension: AlignmentScore['dimension'], score: number, notes?: string): Promise<AlignmentScore> {
   const db = await getDb();
-  await initStrategyTables();
   const now = new Date().toISOString();
   const existing = (await db.getFirstAsync('SELECT * FROM alignment_scores WHERE dimension = ?', [dimension])) as AlignmentScore | null;
   if (existing) {
@@ -158,16 +119,58 @@ export async function saveAlignmentScore(dimension: AlignmentScore['dimension'],
   return { id, dimension, score, notes: notes ?? null, updated_at: now };
 }
 
+export async function getStrategyAlignments(strategyId: string): Promise<StrategyAlignment[]> {
+  const db = await getDb();
+  return (await db.getAllAsync(
+    'SELECT * FROM strategy_alignments WHERE strategy_id = ? ORDER BY dimension ASC',
+    [strategyId]
+  )) as StrategyAlignment[];
+}
+
+export async function saveStrategyAlignment(
+  strategyId: string,
+  dimension: StrategyAlignment['dimension'],
+  score: number,
+  currentState?: string,
+  changesNeeded?: string
+): Promise<StrategyAlignment> {
+  const db = await getDb();
+  const now = new Date().toISOString();
+  const existing = (await db.getFirstAsync(
+    'SELECT * FROM strategy_alignments WHERE strategy_id = ? AND dimension = ?',
+    [strategyId, dimension]
+  )) as StrategyAlignment | null;
+
+  if (existing) {
+    await db.runAsync(
+      'UPDATE strategy_alignments SET score = ?, current_state = ?, changes_needed = ?, updated_at = ? WHERE id = ?',
+      [score, currentState ?? existing.current_state ?? null, changesNeeded ?? existing.changes_needed ?? null, now, existing.id]
+    );
+    return {
+      ...existing,
+      score,
+      current_state: currentState ?? existing.current_state ?? null,
+      changes_needed: changesNeeded ?? existing.changes_needed ?? null,
+      updated_at: now,
+    };
+  }
+
+  const id = uuid();
+  await db.runAsync(
+    'INSERT INTO strategy_alignments (id, strategy_id, dimension, score, current_state, changes_needed, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [id, strategyId, dimension, score, currentState ?? null, changesNeeded ?? null, now]
+  );
+  return { id, strategy_id: strategyId, dimension, score, current_state: currentState ?? null, changes_needed: changesNeeded ?? null, updated_at: now };
+}
+
 // Early Wins
 export async function getEarlyWins(): Promise<EarlyWin[]> {
   const db = await getDb();
-  await initStrategyTables();
   return (await db.getAllAsync('SELECT * FROM early_wins ORDER BY created_at DESC')) as EarlyWin[];
 }
 
 export async function saveEarlyWin(w: Partial<EarlyWin> & { title: string }): Promise<EarlyWin> {
   const db = await getDb();
-  await initStrategyTables();
   const now = new Date().toISOString();
   if (w.id) {
     await db.runAsync(
