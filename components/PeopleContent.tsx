@@ -156,7 +156,7 @@ export default function PeopleContent() {
                   </View>
                   <View style={styles.personInfo}>
                     <Text style={styles.personName}>{person.name}</Text>
-                    {person.title && <Text style={styles.personTitle}>{person.title}</Text>}
+                    {person.title ? <Text style={styles.personTitle}>{person.title}</Text> : null}
                     {person.organisation && (
                       <Text style={styles.personOrg}>{person.organisation}</Text>
                     )}
@@ -183,7 +183,7 @@ export default function PeopleContent() {
             </View>
             <View style={styles.personInfo}>
               <Text style={styles.personName}>{person.name}</Text>
-              {person.title && <Text style={styles.personTitle}>{person.title}</Text>}
+              {person.title ? <Text style={styles.personTitle}>{person.title}</Text> : null}
               {person.organisation && (
                 <Text style={styles.personOrg}>{person.organisation}</Text>
               )}

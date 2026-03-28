@@ -16,14 +16,7 @@ import { useAppStore } from '../../../store';
 import { saveSettings, getSettings } from '../../../db/settingsRepo';
 import { getDayNumber } from '../../../lib/utils';
 import { colors, typography, spacing, radii, shadows } from '../../../lib/theme';
-
-const LEADER_LEVELS = [
-  { value: 'ic', label: 'First-Time Leader' },
-  { value: 'team_lead', label: 'Team Lead' },
-  { value: 'manager', label: 'Manager' },
-  { value: 'director', label: 'Director / Senior Manager' },
-  { value: 'executive', label: 'Executive / C-Suite' },
-];
+import { LEADER_LEVELS } from '../../../lib/constants';
 
 const LINKS = [
   { label: 'The First 90 Days — Michael Watkins', url: 'https://amzn.to/3FirstNinetyDays' },

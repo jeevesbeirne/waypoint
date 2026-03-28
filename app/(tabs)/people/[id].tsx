@@ -155,7 +155,7 @@ export default function PersonDetailScreen() {
               <Text style={styles.avatarText}>{person.name.slice(0, 2).toUpperCase()}</Text>
             </View>
             <Text style={styles.personName}>{person.name}</Text>
-            {person.title && <Text style={styles.personTitle}>{person.title}</Text>}
+            {person.title ? <Text style={styles.personTitle}>{person.title}</Text> : null}
             {person.organisation && (
               <Text style={styles.personOrg}>{person.organisation}</Text>
             )}

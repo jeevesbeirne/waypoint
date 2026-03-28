@@ -103,8 +103,8 @@ export default function TrackPersonDetail() {
               <Text style={styles.avatarText}>{person.name.slice(0, 2).toUpperCase()}</Text>
             </View>
             <Text style={styles.personName}>{person.name}</Text>
-            {person.title && <Text style={styles.personTitle}>{person.title}</Text>}
-            {person.organisation && <Text style={styles.personOrg}>{person.organisation}</Text>}
+            {person.title ? <Text style={styles.personTitle}>{person.title}</Text> : null}
+            {person.organisation ? <Text style={styles.personOrg}>{person.organisation}</Text> : null}
             <View style={styles.categoryBadge}><Text style={styles.categoryBadgeText}>{person.category}</Text></View>
             {person.notes ? (
               <View style={styles.notesSection}>
@@ -132,8 +132,8 @@ export default function TrackPersonDetail() {
           ) : meetings.map((meeting) => (
             <Pressable key={meeting.id} style={styles.meetingCard} onPress={() => router.push(`/(tabs)/track/meetings/${meeting.id}` as any)}>
               <Text style={styles.meetingDate}>{formatDate(meeting.date)}</Text>
-              {meeting.title && <Text style={styles.meetingTitleText} numberOfLines={1}>{meeting.title}</Text>}
-              {meeting.notes && <Text style={styles.meetingNotesText} numberOfLines={2}>{meeting.notes}</Text>}
+              {meeting.title ? <Text style={styles.meetingTitleText} numberOfLines={1}>{meeting.title}</Text> : null}
+              {meeting.notes ? <Text style={styles.meetingNotesText} numberOfLines={2}>{meeting.notes}</Text> : null}
             </Pressable>
           ))}
           <View style={{ height: spacing['3xl'] }} />

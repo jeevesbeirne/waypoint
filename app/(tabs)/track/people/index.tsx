@@ -119,8 +119,8 @@ export default function TrackPeopleList() {
                     </View>
                     <View style={styles.personInfo}>
                       <Text style={styles.personName}>{person.name}</Text>
-                      {person.title && <Text style={styles.personTitle}>{person.title}</Text>}
-                      {person.organisation && <Text style={styles.personOrg}>{person.organisation}</Text>}
+                      {person.title ? <Text style={styles.personTitle}>{person.title}</Text> : null}
+                      {person.organisation ? <Text style={styles.personOrg}>{person.organisation}</Text> : null}
                     </View>
                     <Text style={styles.chevron}>›</Text>
                   </Pressable>

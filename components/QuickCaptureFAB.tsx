@@ -40,7 +40,7 @@ function useFABVisible(): boolean {
   if (afterTab.length === 0) return false;
 
   const tab = afterTab[0];
-  const allowedTabs = ['learn', 'checklist', 'people', 'reflect', 'record-reflect'];
+  const allowedTabs = ['checklist', 'people', 'reflect', 'record-reflect'];
   if (!allowedTabs.includes(tab)) return false;
 
   // If there are sub-segments (like article/[id], add-person, [id]) — hide

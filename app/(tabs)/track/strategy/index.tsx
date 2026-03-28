@@ -84,7 +84,7 @@ export default function StrategyHome() {
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
           <Pressable onPress={() => router.back()}><Text style={styles.backText}>← Track</Text></Pressable>
-          <Text style={styles.heading}>Strategy</Text>
+          <Text style={styles.heading}>Strategy & Alignment</Text>
           <View style={{ width: 60 }} />
         </View>
 

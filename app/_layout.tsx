@@ -1,4 +1,4 @@
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useRouter, usePathname } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -18,6 +18,7 @@ export default function RootLayout() {
   const setDayNumber = useAppStore((s) => s.setDayNumber);
   const setLoading = useAppStore((s) => s.setLoading);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     async function init() {
@@ -49,7 +50,11 @@ export default function RootLayout() {
     if (onboarded === false) {
       router.replace('/onboarding/welcome');
     } else {
-      router.replace('/(tabs)/learn');
+      // Only redirect to learn tab from neutral/root paths — don't override deep-links
+      const isNeutralPath = !pathname || pathname === '/' || pathname === '/index';
+      if (isNeutralPath) {
+        router.replace('/(tabs)/learn');
+      }
     }
   }, [ready, onboarded]);
 

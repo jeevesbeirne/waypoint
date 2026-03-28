@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Text, View } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 import { colors } from '../../lib/theme';
 import QuickCaptureFAB from '../../components/QuickCaptureFAB';
 
@@ -34,29 +34,33 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="learn"
           options={{
-            title: 'Learn',
-            tabBarIcon: ({ focused }) => <TabIcon emoji="📚" focused={focused} />,
+            title: Platform.OS === 'web' ? '📚 Learn' : 'Learn',
+            tabBarIcon: Platform.OS === 'web' ? () => null : ({ focused }) => <TabIcon emoji="📚" focused={focused} />,
+            ...(Platform.OS === 'web' ? { tabBarShowIcon: false } : {}),
           }}
         />
         <Tabs.Screen
           name="checklist"
           options={{
-            title: 'Checklist',
-            tabBarIcon: ({ focused }) => <TabIcon emoji="✅" focused={focused} />,
+            title: Platform.OS === 'web' ? '✅ Checklist' : 'Checklist',
+            tabBarIcon: Platform.OS === 'web' ? () => null : ({ focused }) => <TabIcon emoji="✅" focused={focused} />,
+            ...(Platform.OS === 'web' ? { tabBarShowIcon: false } : {}),
           }}
         />
         <Tabs.Screen
           name="track"
           options={{
-            title: 'Track',
-            tabBarIcon: ({ focused }) => <TabIcon emoji="📊" focused={focused} />,
+            title: Platform.OS === 'web' ? '📊 Track' : 'Track',
+            tabBarIcon: Platform.OS === 'web' ? () => null : ({ focused }) => <TabIcon emoji="📊" focused={focused} />,
+            ...(Platform.OS === 'web' ? { tabBarShowIcon: false } : {}),
           }}
         />
         <Tabs.Screen
           name="settings"
           options={{
-            title: 'Settings',
-            tabBarIcon: ({ focused }) => <TabIcon emoji="⚙️" focused={focused} />,
+            title: Platform.OS === 'web' ? '⚙️ Settings' : 'Settings',
+            tabBarIcon: Platform.OS === 'web' ? () => null : ({ focused }) => <TabIcon emoji="⚙️" focused={focused} />,
+            ...(Platform.OS === 'web' ? { tabBarShowIcon: false } : {}),
           }}
         />
 
