@@ -46,17 +46,10 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
-          name="record-reflect"
+          name="track"
           options={{
-            title: 'Record',
-            tabBarIcon: ({ focused }) => <TabIcon emoji="📓" focused={focused} />,
-          }}
-        />
-        <Tabs.Screen
-          name="meetings"
-          options={{
-            title: 'Meetings',
-            tabBarIcon: ({ focused }) => <TabIcon emoji="🗓️" focused={focused} />,
+            title: 'Track',
+            tabBarIcon: ({ focused }) => <TabIcon emoji="📊" focused={focused} />,
           }}
         />
         <Tabs.Screen
@@ -67,23 +60,12 @@ export default function TabsLayout() {
           }}
         />
 
-        {/* Keep people and reflect routes but hide from tab bar */}
-        <Tabs.Screen
-          name="people"
-          options={{ href: null }}
-        />
-        <Tabs.Screen
-          name="reflect"
-          options={{ href: null }}
-        />
-        <Tabs.Screen
-          name="calendar"
-          options={{ href: null }}
-        />
-
-        {/* Suppress sub-screens from the tab bar */}
-        <Tabs.Screen name="learn/article/[id]" options={{ tabBarItemStyle: { display: 'none' } }} />
-        <Tabs.Screen name="meetings/[id]" options={{ tabBarItemStyle: { display: 'none' } }} />
+        {/* Hidden routes — still accessible but not in tab bar */}
+        <Tabs.Screen name="record-reflect" options={{ href: null }} />
+        <Tabs.Screen name="meetings" options={{ href: null }} />
+        <Tabs.Screen name="people" options={{ href: null }} />
+        <Tabs.Screen name="reflect" options={{ href: null }} />
+        <Tabs.Screen name="calendar" options={{ href: null }} />
       </Tabs>
       <QuickCaptureFAB />
     </View>

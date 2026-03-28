@@ -33,10 +33,42 @@ export interface ChecklistItem {
   task_group?: string | null;
 }
 
+// Bump this version whenever CHECKLIST_ITEMS changes to force a re-seed on device
+const CHECKLIST_DATA_VERSION = 5;
+
 export async function seedChecklistIfEmpty(): Promise<void> {
   const db = await getDb();
-  const count = (await db.getFirstAsync('SELECT COUNT(*) as n FROM checklist_items')) as { n: number } | null;
-  if (count && count.n > 0) return;
+
+  // Check if we need to re-seed due to data version change
+  try {
+    await db.execAsync('CREATE TABLE IF NOT EXISTS checklist_meta (key TEXT PRIMARY KEY, value TEXT)');
+    const versionRow = (await db.getFirstAsync('SELECT value FROM checklist_meta WHERE key = ?', ['data_version'])) as { value: string } | null;
+    const currentVersion = versionRow ? parseInt(versionRow.value, 10) : 0;
+
+    if (currentVersion >= CHECKLIST_DATA_VERSION) {
+      // Already on latest version, check if DB has items
+      const count = (await db.getFirstAsync('SELECT COUNT(*) as n FROM checklist_items')) as { n: number } | null;
+      if (count && count.n > 0) return;
+    }
+
+    // Need to re-seed: clear old prescribed tasks (keep user-created ones)
+    await db.execAsync('DELETE FROM checklist_items WHERE is_user_task = 0 OR is_user_task IS NULL');
+    await db.runAsync(
+      'INSERT OR REPLACE INTO checklist_meta (key, value) VALUES (?, ?)',
+      ['data_version', String(CHECKLIST_DATA_VERSION)]
+    );
+  } catch (e) {
+    // First run — no meta table yet, proceed with seeding
+    const count = (await db.getFirstAsync('SELECT COUNT(*) as n FROM checklist_items')) as { n: number } | null;
+    if (count && count.n > 0) {
+      // Old data without versioning — clear and re-seed
+      await db.execAsync('DELETE FROM checklist_items');
+      try {
+        await db.execAsync('CREATE TABLE IF NOT EXISTS checklist_meta (key TEXT PRIMARY KEY, value TEXT)');
+        await db.runAsync('INSERT OR REPLACE INTO checklist_meta (key, value) VALUES (?, ?)', ['data_version', String(CHECKLIST_DATA_VERSION)]);
+      } catch (_) {}
+    }
+  }
   const now = new Date().toISOString();
   for (const item of CHECKLIST_ITEMS) {
     await db.runAsync(

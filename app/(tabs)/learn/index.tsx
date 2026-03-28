@@ -121,43 +121,126 @@ const CATEGORIES = [
   { key: 'accelerate', label: '10. Accelerate Everyone' },
 ] as const;
 
-const PHASE_FOCUS: Record<string, { title: string; bullets: string[] }> = {
-  learn: {
-    title: 'Learn & Listen — Days 1–30',
-    bullets: [
-      'Prepare yourself mentally — your old success patterns may mislead you here',
-      'Invest in structured learning before action — build your learning agenda',
-      'Diagnose your STARS situation before forming any strategic hypothesis',
-      'Negotiate success with your boss — situational diagnosis first, then expectations, resources, style, personal development',
-    ],
+const TRANSITION_BANNER_KEY = 'waypoint_transition_banner_seen';
+
+const TRANSITION_STAGES = [
+  {
+    title: 'Before you start',
+    text: 'The period before Day 1. You have no access, no authority, and no insider knowledge — but you can prepare yourself mentally, research the organisation from public sources, and plan how you\'ll approach your first weeks.',
   },
-  build: {
-    title: 'Build & Connect — Days 31–60',
-    bullets: [
-      'Secure 2–3 team-owned early wins that build credibility',
-      'Conduct your alignment diagnostic and make structural clarifications',
-      'Complete team assessments and make key personnel decisions by day 60',
-      'Build your stakeholder coalition — map influence and find common ground',
-    ],
+  {
+    title: 'Month 1 — Learn and Listen (Days 1-30)',
+    text: 'Your job is to learn, not to act. Run a structured listening tour. Meet your direct reports, your boss, your peers, and key stakeholders. Ask questions. Resist the urge to make changes until you understand the context. Complete your situational diagnosis using the STARS framework.',
   },
-  deliver: {
-    title: 'Deliver & Lead — Days 61–90',
-    bullets: [
-      'Activate your coalition around your first major initiatives',
-      'Protect your personal balance — sustainability is a performance issue',
-      'Accelerate everyone: share your learning methods and build team transition capability',
-    ],
+  {
+    title: 'Month 2 — Build and Connect (Days 31-60)',
+    text: 'Start delivering early wins. Deepen key relationships — especially with your boss and coalition members. Assess your team honestly. Have the difficult conversations you\'ve been postponing. Negotiate for the resources you need.',
   },
-};
+  {
+    title: 'Month 3 — Deliver and Lead (Days 61-90)',
+    text: 'Drive momentum on your strategic priorities. Build the team and culture you want. Strengthen your stakeholder network beyond your immediate circle. Write your 90-day narrative — the story of what you\'ve learned, what you\'ve achieved, and where you\'re heading.',
+  },
+];
+
+function TransitionThinking() {
+  const [expanded, setExpanded] = useState(true);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem(TRANSITION_BANNER_KEY).then((val) => {
+      if (val === 'collapsed') setExpanded(false);
+      setLoaded(true);
+    });
+  }, []);
+
+  const handleToggle = async () => {
+    const next = !expanded;
+    setExpanded(next);
+    if (!next) await AsyncStorage.setItem(TRANSITION_BANNER_KEY, 'collapsed');
+  };
+
+  if (!loaded) return null;
+
+  return (
+    <View style={transitionStyles.container}>
+      <Pressable style={transitionStyles.header} onPress={handleToggle}>
+        <Text style={transitionStyles.title}>🧭 How to think about your transition</Text>
+        <Text style={transitionStyles.chevron}>{expanded ? '▲' : '▼'}</Text>
+      </Pressable>
+      {expanded && (
+        <View style={transitionStyles.body}>
+          <Text style={transitionStyles.intro}>Think of your transition in four stages:</Text>
+          {TRANSITION_STAGES.map((stage, i) => (
+            <View key={i} style={transitionStyles.stageBlock}>
+              <Text style={transitionStyles.stageTitle}>{stage.title}</Text>
+              <Text style={transitionStyles.stageText}>{stage.text}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+const transitionStyles = StyleSheet.create({
+  container: {
+    marginHorizontal: spacing.md,
+    marginTop: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    overflow: 'hidden',
+    ...shadows.md,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: spacing.md,
+    backgroundColor: colors.primary,
+  },
+  title: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+    color: '#fff',
+    flex: 1,
+  },
+  chevron: { color: colors.accent, fontSize: typography.sizes.xs, fontWeight: 'bold' },
+  body: { padding: spacing.md },
+  intro: {
+    fontSize: typography.sizes.sm,
+    color: colors.text.secondary,
+    fontWeight: typography.weights.semibold,
+    marginBottom: spacing.md,
+  },
+  stageBlock: { marginBottom: spacing.md },
+  stageTitle: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+    color: colors.primary,
+    marginBottom: spacing.xs,
+  },
+  stageText: {
+    fontSize: typography.sizes.sm,
+    color: colors.text.secondary,
+    lineHeight: typography.sizes.sm * typography.lineHeights.relaxed,
+  },
+});
 
 export default function LearnTab() {
   const router = useRouter();
   const { dayNumber, settings } = useAppStore();
+  const hasStartDate = Boolean(settings?.start_date);
   const phaseKey = getPhase(dayNumber);
   const weekNum = getWeekNumber(dayNumber);
   const phase = phaseConfig[phaseKey];
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['prepare']));
   const [expandedArticles, setExpandedArticles] = useState<Set<string>>(new Set());
+
+  // Determine the correct phase heading
+  const showPrepare = !hasStartDate || dayNumber <= 0;
+  const phaseName = showPrepare ? 'Prepare Yourself' : phase.name;
+  const phaseIcon = showPrepare ? '🎯' : phase.icon;
+  const phaseDayLabel = showPrepare ? 'Before Day 1' : `Day ${dayNumber} of 90`;
 
   const toggleCategory = (cat: string) => {
     setExpandedCategories((prev) => {
@@ -183,37 +266,28 @@ export default function LearnTab() {
     });
   };
 
-  const phaseFocus = PHASE_FOCUS[phaseKey];
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Phase Banner */}
-        <View style={[styles.phaseBanner, { backgroundColor: phase.color }]}>
-          <Text style={styles.phaseBannerEmoji}>{phase.icon}</Text>
+        <View style={[styles.phaseBanner, { backgroundColor: showPrepare ? colors.primary : phase.color }]}>
+          <Text style={styles.phaseBannerEmoji}>{phaseIcon}</Text>
           <View>
-            <Text style={styles.phaseBannerDay}>Day {dayNumber} of 90</Text>
-            <Text style={styles.phaseBannerName}>{phase.name}</Text>
+            <Text style={styles.phaseBannerDay}>{phaseDayLabel}</Text>
+            <Text style={styles.phaseBannerName}>{phaseName}</Text>
           </View>
-          <View style={styles.phasePill}>
-            <Text style={styles.phasePillText}>Week {weekNum}</Text>
-          </View>
+          {!showPrepare && (
+            <View style={styles.phasePill}>
+              <Text style={styles.phasePillText}>Week {weekNum}</Text>
+            </View>
+          )}
         </View>
+
+        {/* How to think about your transition */}
+        <TransitionThinking />
 
         {/* Framework intro */}
         <FrameworkIntro />
-
-        {/* Start Here Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>⭐ What to focus on now</Text>
-          <Text style={styles.cardSubtitle}>{phaseFocus.title}</Text>
-          {phaseFocus.bullets.map((bullet, i) => (
-            <View key={i} style={styles.bulletRow}>
-              <Text style={styles.bulletDot}>•</Text>
-              <Text style={styles.bulletText}>{bullet}</Text>
-            </View>
-          ))}
-        </View>
 
         {/* Key Topics Accordion */}
         <Text style={styles.sectionHeader}>Key Topics</Text>

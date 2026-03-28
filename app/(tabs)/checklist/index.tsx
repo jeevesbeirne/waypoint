@@ -306,45 +306,71 @@ export default function ChecklistTab() {
     );
   };
 
-  const renderItemRow = (item: ChecklistItem) => {
+  const renderItemRow = (item: ChecklistItem, isLastChild?: boolean) => {
     const depth = getDepth(item);
     const isParent = (childrenByParent.get(item.id) ?? []).length > 0;
     const children = childrenByParent.get(item.id) ?? [];
     const childDone = children.filter((c) => c.completed === 1).length;
+    const groupColor = getGroupColor(item);
+    const indentLeft = depth * 24;
+    const isExpanded = expandedParents.has(item.id);
 
     return (
       <View key={item.id}>
-        <View style={[styles.row, { marginLeft: depth * 16 + (depth >= 2 ? 16 : 0), borderLeftColor: getGroupColor(item) }]}>
-          <Pressable style={styles.checkbox} onPress={() => void toggleChecklistItem(item.id, item.completed !== 1).then(loadItems)}>
-            <Text style={styles.checkboxText}>{item.completed === 1 ? '✅' : '⬜'}</Text>
-          </Pressable>
-          <Pressable style={styles.rowContent} onPress={() => onRowPress(item)} onLongPress={() => onLongPress(item)}>
-            <View style={styles.rowTitleLine}>
-              {isParent ? (
-                <Pressable onPress={() => toggleParent(item.id)} style={styles.chevronBtn}>
-                  <Text style={styles.chevronText}>{expandedParents.has(item.id) ? '▼' : '▶'}</Text>
-                </Pressable>
-              ) : (
-                <View style={styles.chevronPlaceholder} />
-              )}
+        {/* Indentation wrapper with connecting line */}
+        <View style={{ flexDirection: 'row', marginHorizontal: spacing.lg }}>
+          {/* Vertical connecting lines for each depth level */}
+          {Array.from({ length: depth }).map((_, i) => (
+            <View key={i} style={{ width: 24, alignItems: 'center' }}>
+              <View style={{ width: 2, flex: 1, backgroundColor: groupColor + '40' }} />
+            </View>
+          ))}
+
+          {/* The actual row */}
+          <View style={[styles.row, { flex: 1, marginHorizontal: 0, borderLeftColor: groupColor }]}>
+            {/* Expand arrow on LEFT — large touch target */}
+            {isParent ? (
+              <Pressable
+                onPress={() => toggleParent(item.id)}
+                style={styles.expandBtn}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.expandArrow}>{isExpanded ? '▼' : '▶'}</Text>
+              </Pressable>
+            ) : (
+              <View style={styles.expandPlaceholder} />
+            )}
+
+            {/* Content — tappable for detail */}
+            <Pressable style={styles.rowContent} onPress={() => onRowPress(item)} onLongPress={() => onLongPress(item)}>
               <Text numberOfLines={2} style={[styles.rowTitle, item.completed === 1 && styles.rowTitleDone]}>
                 {item.title}
               </Text>
-            </View>
-            <View style={styles.rowMeta}>
-              {renderWeekBadge(item)}
-              {viewMode === 'week' && (
-                <View style={[styles.watkinsChip, { backgroundColor: getGroupColor(item) + '22', borderColor: getGroupColor(item) }]}>
-                  <Text style={[styles.watkinsChipText, { color: getGroupColor(item) }]}>{getPrimaryGroup(item)}</Text>
-                </View>
-              )}
-              <Text style={styles.category}>{item.category}</Text>
-              {isParent && <Text style={styles.progressBadge}>{childDone}/{children.length} sub-tasks complete</Text>}
-            </View>
-          </Pressable>
+              <View style={styles.rowMeta}>
+                {renderWeekBadge(item)}
+                {viewMode === 'week' && (
+                  <View style={[styles.watkinsChip, { backgroundColor: groupColor + '22', borderColor: groupColor }]}>
+                    <Text style={[styles.watkinsChipText, { color: groupColor }]}>{getPrimaryGroup(item)}</Text>
+                  </View>
+                )}
+                <Text style={styles.category}>{item.category}</Text>
+                {isParent && <Text style={styles.progressBadge}>{childDone}/{children.length}</Text>}
+              </View>
+            </Pressable>
+
+            {/* Checkbox on RIGHT */}
+            <Pressable
+              style={styles.checkbox}
+              onPress={() => void toggleChecklistItem(item.id, item.completed !== 1).then(loadItems)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.checkboxText}>{item.completed === 1 ? '✅' : '⬜'}</Text>
+            </Pressable>
+          </View>
         </View>
 
-        {isParent && expandedParents.has(item.id) && children.map((child) => renderItemRow(child))}
+        {/* Expanded children with connecting lines */}
+        {isParent && isExpanded && children.map((child, ci) => renderItemRow(child, ci === children.length - 1))}
       </View>
     );
   };
@@ -738,21 +764,29 @@ const styles = StyleSheet.create({
   toggleTextOn: { color: colors.text.inverse },
   row: {
     flexDirection: 'row',
-    marginHorizontal: spacing.lg,
     marginBottom: spacing.sm,
     backgroundColor: colors.surface,
     borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.border,
     borderLeftWidth: 4,
+    alignItems: 'center',
   },
-  checkbox: { width: 40, alignItems: 'center', justifyContent: 'center' },
-  checkboxText: { fontSize: 20 },
-  rowContent: { flex: 1, paddingVertical: spacing.sm, paddingRight: spacing.sm },
-  rowTitleLine: { flexDirection: 'row', alignItems: 'center' },
-  chevronBtn: { width: 22, alignItems: 'center', justifyContent: 'center' },
-  chevronText: { color: colors.text.secondary, fontSize: typography.sizes.xs },
-  chevronPlaceholder: { width: 22 },
+  expandBtn: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  expandArrow: {
+    fontSize: 18,
+    color: colors.text.secondary,
+    fontWeight: 'bold',
+  },
+  expandPlaceholder: { width: 44 },
+  checkbox: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  checkboxText: { fontSize: 22 },
+  rowContent: { flex: 1, paddingVertical: spacing.sm, paddingRight: spacing.xs },
   rowTitle: { flex: 1, color: colors.text.primary, fontSize: typography.sizes.base, fontWeight: '600' },
   rowTitleDone: { color: colors.text.muted, textDecorationLine: 'line-through' },
   rowMeta: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.xs, flexWrap: 'wrap' },
